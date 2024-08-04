@@ -11,6 +11,9 @@
 		E44ACECF2C5F4A39009741C2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E44ACECE2C5F4A39009741C2 /* ContentView.swift */; };
 		E44ACED12C5F4A3A009741C2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E44ACED02C5F4A3A009741C2 /* Assets.xcassets */; };
 		E44ACED52C5F4A3A009741C2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E44ACED42C5F4A3A009741C2 /* Preview Assets.xcassets */; };
+		E44ACEDD2C5F4A5E009741C2 /* StationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E44ACEDC2C5F4A5E009741C2 /* StationData.swift */; };
+		E44ACEDF2C5F4B60009741C2 /* vancouver_harbour_daily_1924_2024.json in Resources */ = {isa = PBXBuildFile; fileRef = E44ACEDE2C5F4B60009741C2 /* vancouver_harbour_daily_1924_2024.json */; };
+		E44ACEE12C5F5169009741C2 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E44ACEE02C5F5169009741C2 /* ChartView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +23,9 @@
 		E44ACED02C5F4A3A009741C2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E44ACED22C5F4A3A009741C2 /* ClimateData.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClimateData.entitlements; sourceTree = "<group>"; };
 		E44ACED42C5F4A3A009741C2 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		E44ACEDC2C5F4A5E009741C2 /* StationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationData.swift; sourceTree = "<group>"; };
+		E44ACEDE2C5F4B60009741C2 /* vancouver_harbour_daily_1924_2024.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = vancouver_harbour_daily_1924_2024.json; sourceTree = "<group>"; };
+		E44ACEE02C5F5169009741C2 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,8 +58,11 @@
 		E44ACECB2C5F4A39009741C2 /* ClimateData */ = {
 			isa = PBXGroup;
 			children = (
+				E44ACEDE2C5F4B60009741C2 /* vancouver_harbour_daily_1924_2024.json */,
 				E44ACECC2C5F4A39009741C2 /* ClimateDataApp.swift */,
 				E44ACECE2C5F4A39009741C2 /* ContentView.swift */,
+				E44ACEE02C5F5169009741C2 /* ChartView.swift */,
+				E44ACEDB2C5F4A47009741C2 /* Model */,
 				E44ACED02C5F4A3A009741C2 /* Assets.xcassets */,
 				E44ACED22C5F4A3A009741C2 /* ClimateData.entitlements */,
 				E44ACED32C5F4A3A009741C2 /* Preview Content */,
@@ -67,6 +76,14 @@
 				E44ACED42C5F4A3A009741C2 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		E44ACEDB2C5F4A47009741C2 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				E44ACEDC2C5F4A5E009741C2 /* StationData.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -127,6 +144,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E44ACEDF2C5F4B60009741C2 /* vancouver_harbour_daily_1924_2024.json in Resources */,
 				E44ACED52C5F4A3A009741C2 /* Preview Assets.xcassets in Resources */,
 				E44ACED12C5F4A3A009741C2 /* Assets.xcassets in Resources */,
 			);
@@ -141,6 +159,8 @@
 			files = (
 				E44ACECF2C5F4A39009741C2 /* ContentView.swift in Sources */,
 				E44ACECD2C5F4A39009741C2 /* ClimateDataApp.swift in Sources */,
+				E44ACEDD2C5F4A5E009741C2 /* StationData.swift in Sources */,
+				E44ACEE12C5F5169009741C2 /* ChartView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
