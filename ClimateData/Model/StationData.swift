@@ -12,7 +12,7 @@ struct Geometry: Codable {
     let coordinates: [Double]
 }
 
-struct Properties: Codable {
+struct Properties: Codable, Identifiable {
     let heatingDegreeDays: Double?
     let provinceCode: String?
     let minTemperature: Double?
