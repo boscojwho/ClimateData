@@ -80,15 +80,15 @@ struct ChartView: View {
             }
             .chartForegroundStyleScale(range: features.enumerated().map {
                 offset, element in
-                if offset == 0 {
-                    return Color.red
-                } else {
+//                if offset == 0 {
+//                    return Color.red
+//                } else {
                     let opacity = Double(offset)/Double(features.count)
                     return Color.blue.opacity(opacity)
-                }
+//                }
             })
         } label: {
-            Text("Maximum Daily Temperatures in June, by Year")
+            Text("Maximum Daily Temperatures in Selected Month (by Year)")
                 .font(.largeTitle)
         }
     }
