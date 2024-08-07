@@ -23,7 +23,8 @@ struct ContentView: View {
                         features: features(
                             Int(selectedMinYear)...Int(selectedMaxYear),
                             month: Int(selectedMonth)
-                        )
+                        ),
+                        yProperty: selectedProperty.keyPath
                     )
                 }
             } else {
@@ -77,6 +78,7 @@ struct ContentView: View {
         }
     }
     
+    @State private var selectedProperty: Properties.CodingKeys = .maxTemperature
     @State private var selectedMinYear: Double = 1900
     @State private var selectedMaxYear: Double = 2024
     @State private var selectedMonth: Double = 1
@@ -84,70 +86,82 @@ struct ContentView: View {
     @ViewBuilder
     private func filters() -> some View {
         if let climateData {
-            GroupBox {
-                VStack(spacing: 12) {
-                    VStack {
-                        Text(String(selectedMonth))
-                        Slider(value: $selectedMonth, in: 1...12, step: 1) {
-                            EmptyView()
-                        } minimumValueLabel: {
-                            Text("Jan.")
-                        } maximumValueLabel: {
-                            Text("Dec.")
-                        } onEditingChanged: { _ in
-                            /// no-op
+            VStack {
+                GroupBox {
+                    Picker(selection: $selectedProperty) {
+                        ForEach(Properties.CodingKeys.allCases, id: \.self) { p in
+                            Text(p.stringValue)
+                                .tag(p.stringValue)
                         }
+                    } label: {
+                        Text("Data Property")
                     }
-                    
-                    let years: [Int] = Array(byYear!.keys.sorted { $0 < $1 })
-                    
-                    VStack {
-                        Text("Start Year: \(selectedMinYear)")
-                        Slider(value: .init(get: {
-                            selectedMinYear
-                        }, set: { newValue in
-                            if newValue >= selectedMaxYear {
-                                if selectedMaxYear == Double(years.last!) {
-                                    selectedMinYear = max(newValue - 1, Double(years.first!))
-                                } else {
-                                    selectedMaxYear = min(newValue + 1, Double(years.last!))
-                                }
-                            } else {
-                                selectedMinYear = newValue
+                }
+                GroupBox {
+                    VStack(spacing: 12) {
+                        VStack {
+                            Text(String(selectedMonth))
+                            Slider(value: $selectedMonth, in: 1...12, step: 1) {
+                                EmptyView()
+                            } minimumValueLabel: {
+                                Text("Jan.")
+                            } maximumValueLabel: {
+                                Text("Dec.")
+                            } onEditingChanged: { _ in
+                                /// no-op
                             }
-                        }), in: Double(years.first!)...Double(years.last!), step: 1) {
-                            EmptyView()
-                        } minimumValueLabel: {
-                            EmptyView()
-                        } maximumValueLabel: {
-                            EmptyView()
-                        } onEditingChanged: { _ in
-                            /// no-op
                         }
-                    }
-
-                    VStack {
-                        Text("End Year: \(selectedMaxYear)")
-                        Slider(value: .init(get: {
-                            selectedMaxYear
-                        }, set: { newValue in
-                            if newValue <= selectedMinYear {
-                                if selectedMinYear == Double(years.first!) {
-                                    selectedMaxYear = max(newValue + 1, Double(years.last!))
+                        
+                        let years: [Int] = Array(byYear!.keys.sorted { $0 < $1 })
+                        
+                        VStack {
+                            Text("Start Year: \(selectedMinYear)")
+                            Slider(value: .init(get: {
+                                selectedMinYear
+                            }, set: { newValue in
+                                if newValue >= selectedMaxYear {
+                                    if selectedMaxYear == Double(years.last!) {
+                                        selectedMinYear = max(newValue - 1, Double(years.first!))
+                                    } else {
+                                        selectedMaxYear = min(newValue + 1, Double(years.last!))
+                                    }
                                 } else {
-                                    selectedMinYear = max(newValue - 1, Double(years.first!))
+                                    selectedMinYear = newValue
                                 }
-                            } else {
-                                selectedMaxYear = newValue
+                            }), in: Double(years.first!)...Double(years.last!), step: 1) {
+                                EmptyView()
+                            } minimumValueLabel: {
+                                EmptyView()
+                            } maximumValueLabel: {
+                                EmptyView()
+                            } onEditingChanged: { _ in
+                                /// no-op
                             }
-                        }), in: Double(years.first!)...Double(years.last!), step: 1) {
-                            EmptyView()
-                        } minimumValueLabel: {
-                            EmptyView()
-                        } maximumValueLabel: {
-                            EmptyView()
-                        } onEditingChanged: { _ in
-                            /// no-op
+                        }
+                        
+                        VStack {
+                            Text("End Year: \(selectedMaxYear)")
+                            Slider(value: .init(get: {
+                                selectedMaxYear
+                            }, set: { newValue in
+                                if newValue <= selectedMinYear {
+                                    if selectedMinYear == Double(years.first!) {
+                                        selectedMaxYear = max(newValue + 1, Double(years.last!))
+                                    } else {
+                                        selectedMinYear = max(newValue - 1, Double(years.first!))
+                                    }
+                                } else {
+                                    selectedMaxYear = newValue
+                                }
+                            }), in: Double(years.first!)...Double(years.last!), step: 1) {
+                                EmptyView()
+                            } minimumValueLabel: {
+                                EmptyView()
+                            } maximumValueLabel: {
+                                EmptyView()
+                            } onEditingChanged: { _ in
+                                /// no-op
+                            }
                         }
                     }
                 }

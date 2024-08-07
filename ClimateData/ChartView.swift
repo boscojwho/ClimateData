@@ -10,6 +10,7 @@ import Charts
 
 struct ChartView: View {
     let features: [[Feature]]
+    let yProperty: PartialKeyPath<Properties>
     @State private var selectedIndex: Int?
 
     var body: some View {
@@ -20,7 +21,7 @@ struct ChartView: View {
                     dataPoints: feature,
                     properties: .init(
                         x: (\.localDay, "Day"),
-                        y: (\.maxTemperature, "Temp."),
+                        y: (yProperty, "Temp."),
                         foregroundStyle: (\.localYear, "Year")
                     ),
                     x: .init(value: Int.self),
@@ -100,8 +101,4 @@ struct ChartView: View {
                 .font(.largeTitle)
         }
     }
-}
-
-#Preview {
-    ChartView(features: [])
 }

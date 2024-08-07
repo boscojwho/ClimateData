@@ -48,7 +48,7 @@ struct Properties: Codable, Identifiable {
     let totalRainFlag: String?
     let localMonth: Int
     
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case heatingDegreeDays = "HEATING_DEGREE_DAYS"
         case provinceCode = "PROVINCE_CODE"
         case minTemperature = "MIN_TEMPERATURE"
@@ -83,6 +83,79 @@ struct Properties: Codable, Identifiable {
         case directionMaxGust = "DIRECTION_MAX_GUST"
         case totalRainFlag = "TOTAL_RAIN_FLAG"
         case localMonth = "LOCAL_MONTH"
+        
+        var keyPath: PartialKeyPath<Properties> {
+            switch self {
+            case .heatingDegreeDays:
+                \.heatingDegreeDays
+            case .provinceCode:
+                \.provinceCode
+            case .minTemperature:
+                \.minTemperature
+            case .snowOnGroundFlag:
+                \.snowOnGroundFlag
+            case .maxRelHumidityFlag:
+                \.maxRelHumidityFlag
+            case .maxTemperatureFlag:
+                \.maxTemperatureFlag
+            case .coolingDegreeDaysFlag:
+                \.coolingDegreeDaysFlag
+            case .meanTemperature:
+                \.meanTemperature
+            case .localYear:
+                \.localYear
+            case .totalPrecipitationFlag:
+                \.totalPrecipitationFlag
+            case .minRelHumidity:
+                \.minRelHumidity
+            case .localDate:
+                \.localDate
+            case .coolingDegreeDays:
+                \.coolingDegreeDays
+            case .speedMaxGust:
+                \.speedMaxGust
+            case .speedMaxGustFlag:
+                \.speedMaxGustFlag
+            case .localDay:
+                \.localDay
+            case .minTemperatureFlag:
+                \.minTemperatureFlag
+            case .totalRain:
+                \.totalRain
+            case .totalSnowFlag:
+                \.totalSnowFlag
+            case .heatingDegreeDaysFlag:
+                \.heatingDegreeDaysFlag
+            case .directionMaxGustFlag:
+                \.directionMaxGustFlag
+            case .meanTemperatureFlag:
+                \.meanTemperatureFlag
+            case .id:
+                \.id
+            case .totalPrecipitation:
+                \.totalPrecipitation
+            case .maxTemperature:
+                \.maxTemperature
+            case .maxRelHumidity:
+                \.maxRelHumidity
+            case .totalSnow:
+                \.totalSnow
+            case .minRelHumidityFlag:
+                \.minRelHumidityFlag
+            case .snowOnGround:
+                \.snowOnGround
+            case .climateIdentifier:
+                \.climateIdentifier
+            case .stationName:
+                \.stationName
+            case .directionMaxGust:
+                \.directionMaxGust
+            case .totalRainFlag:
+                \.totalRainFlag
+            case .localMonth:
+                \.localMonth
+            }
+        }
     }
 }
 
