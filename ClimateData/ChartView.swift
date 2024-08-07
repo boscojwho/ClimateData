@@ -17,7 +17,6 @@ struct ChartView: View {
         GroupBox {
             Chart(features, id: \.first?.id) { feature in
                 MonthOfYearLineChart(
-                    localYear: feature.first!.properties.localYear,
                     dataPoints: feature,
                     properties: .init(
                         x: (\.localDay, "Day"),

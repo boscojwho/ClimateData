@@ -40,7 +40,6 @@ struct MonthOfYearLineChart<
         }
     }
     
-    let localYear: Int
     let dataPoints: [Feature]
     let properties: PropertiesViewModel
     let x: AnyPlottable<X>
