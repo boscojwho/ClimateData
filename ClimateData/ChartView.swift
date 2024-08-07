@@ -17,7 +17,15 @@ struct ChartView: View {
             Chart(features, id: \.first?.id) { feature in
                 MonthOfYearLineChart(
                     localYear: feature.first!.properties.localYear,
-                    dataPoints: feature
+                    dataPoints: feature,
+                    properties: .init(
+                        x: (\.localDay, "Day"),
+                        y: (\.maxTemperature, "Temp."),
+                        foregroundStyle: (\.localYear, "Year")
+                    ),
+                    x: .init(value: Int.self),
+                    y: .init(value: Double.self),
+                    foregroundStyle: .init(value: Int.self)
                 )
             }
             .chartLegend(.visible)
