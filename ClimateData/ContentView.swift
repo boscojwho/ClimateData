@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct ContentView: View {
     @State private var climateData: FeatureCollection?
@@ -110,6 +111,32 @@ struct ContentView: View {
         }
     }
     
+    @ViewBuilder private func stationData() -> some View {
+        if let feature = climateData?.features.first,
+            let lat = feature.geometry.coordinates.last,
+            let long = feature.geometry.coordinates.first {
+            let stationName = feature.properties.stationName
+            GroupBox {
+                Text(stationName)
+                Map(
+                    bounds: .init(minimumDistance: 1000,maximumDistance: 15000),
+                    interactionModes: [.zoom, .pan]
+                ) {
+                    Marker(
+                        stationName,
+                        coordinate: .init(latitude: lat, longitude: long)
+                    )
+                    .mapOverlayLevel(level: .aboveLabels)
+                }
+                .mapStyle(.standard)
+                .mapControlVisibility(.hidden)
+            }
+            .aspectRatio(1, contentMode: .fit)
+        } else {
+            EmptyView()
+        }
+    }
+    
     @State private var selectedProperty: Properties.CodingKeys = .maxTemperature
     @State private var selectedMinYear: Double = 1900
     @State private var selectedMaxYear: Double = 2024
@@ -123,6 +150,7 @@ struct ContentView: View {
         if let climateData {
             let years: [Int] = Array(byYear!.keys.sorted { $0 < $1 })
             VStack {
+                stationData()
                 GroupBox {
                     Text("Loaded ^[\(climateData.numberReturned) day](inflect: true) of data.")
                 }
