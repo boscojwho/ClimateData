@@ -11,6 +11,9 @@ import Charts
 struct ChartView: View {
     let features: [[Feature]]
     let yProperty: PartialKeyPath<Properties>
+    let yCodingKey: Properties.CodingKeys
+    let yDomain: [Double]
+    
     @State private var selectedIndex: Int?
 
     var body: some View {
@@ -20,7 +23,7 @@ struct ChartView: View {
                     dataPoints: feature,
                     properties: .init(
                         x: (\.localDay, "Day"),
-                        y: (yProperty, "Temp."),
+                        y: (yProperty, yCodingKey.stringValue),
                         foregroundStyle: (\.localYear, "Year")
                     ),
                     x: .init(value: Int.self),
@@ -60,7 +63,9 @@ struct ChartView: View {
                         .fontWeight(.medium)
                 }
             }
-            .chartYScale(domain: [0, 41])
+            .chartYScale(
+                domain: yDomain
+            )
             .chartYAxis {
                 AxisMarks(preset: .extended, position: .leading, values: .stride(by: 5)) { value in
                     if let temp = value.as(Int.self) {
@@ -79,9 +84,9 @@ struct ChartView: View {
                     }
                 }
             }
-            .chartYAxisLabel(position: .topLeading) {
+            .chartYAxisLabel(position: .top) {
                 GroupBox {
-                    Text("Temp. (C)")
+                    Text("\(yCodingKey.stringValue)")
                         .font(.title2)
                         .fontWeight(.medium)
                 }
@@ -96,7 +101,7 @@ struct ChartView: View {
 //                }
             })
         } label: {
-            Text("Maximum Daily Temperatures in Selected Month (by Year)")
+            Text("\(yCodingKey.stringValue) in Selected Month (by Year)")
                 .font(.largeTitle)
         }
     }

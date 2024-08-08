@@ -11,7 +11,9 @@ struct ContentView: View {
     @State private var climateData: FeatureCollection?
     @State private var byYear: [Int : [Feature]]?
     @State private var byYearMonth: [Int : [Int : [Feature]]]?
-    
+    @State private var features: [[Feature]] = []
+    @State private var domain: [Double] = [0, 0]
+
     var body: some View {
         HStack {
             if let climateData, let byYearMonth, let byYear {
@@ -20,12 +22,38 @@ struct ContentView: View {
                         Text("Loaded ^[\(climateData.numberReturned) day](inflect: true) of data.")
                     }
                     ChartView(
-                        features: features(
+                        features: features,
+                        yProperty: selectedProperty.keyPath,
+                        yCodingKey: selectedProperty,
+                        yDomain: domain
+                    )
+                    .onChange(of: selectedProperty, initial: true) { _, newValue in
+                        let features = features(
                             Int(selectedMinYear)...Int(selectedMaxYear),
                             month: Int(selectedMonth)
-                        ),
-                        yProperty: selectedProperty.keyPath
-                    )
+                        )
+                        let domain = findDomain(in: byYear.values.compactMap { $0 })
+                        self.features = features
+                        self.domain = domain
+                    }
+                    .onChange(of: selectedMonth) {
+                        self.features = features(
+                            Int(selectedMinYear)...Int(selectedMaxYear),
+                            month: Int(selectedMonth)
+                        )
+                    }
+                    .onChange(of: selectedMinYear) {
+                        self.features = features(
+                            Int(selectedMinYear)...Int(selectedMaxYear),
+                            month: Int(selectedMonth)
+                        )
+                    }
+                    .onChange(of: selectedMaxYear) {
+                        self.features = features(
+                            Int(selectedMinYear)...Int(selectedMaxYear),
+                            month: Int(selectedMonth)
+                        )
+                    }
                 }
             } else {
                 ProgressView()
@@ -169,6 +197,40 @@ struct ContentView: View {
         } else {
             ProgressView()
         }
+    }
+    
+    private func findDomain(in features: [[Feature]]) -> [Double] {
+        var minDomain: Double = 0
+        var maxDomain: Double = 0
+        for feature in features {
+            guard let first = feature.first else {
+                continue
+            }
+            
+            var min = first.properties[keyPath: selectedProperty.keyPath] as? Double ?? 0
+            var max = first.properties[keyPath: selectedProperty.keyPath] as? Double ?? 0
+            
+            for data in feature {
+                let val = data.properties[keyPath: selectedProperty.keyPath] as? Double ?? 0
+                if val < min {
+                    min = val
+                }
+                if val > max {
+                    max = val
+                }
+            }
+            print(min, max)
+            if min < minDomain {
+                minDomain = min
+            }
+            if max > maxDomain {
+                maxDomain = max
+            }
+                
+        }
+        
+        print(minDomain, maxDomain)
+        return [minDomain, maxDomain]
     }
 }
 

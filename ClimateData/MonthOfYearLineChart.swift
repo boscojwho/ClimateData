@@ -48,16 +48,54 @@ struct MonthOfYearLineChart<
     
     var body: some ChartContent {
         ForEach(dataPoints) { point in
-            if let x = point.properties[keyPath: properties.x] as? X,
-               let y = point.properties[keyPath: properties.y] as? Y,
-               let f = point.properties[keyPath: properties.foregroundStyle] as? F {
-                LineMark(
-                    x: .value(properties.xLabelKey, x),
-                    y: .value(properties.yLabelKey, y)
-                )
-                .foregroundStyle(by: .value(properties.foregroundStyleLabelKey, f))
-                .interpolationMethod(.monotone)
+            if let f = point.properties[keyPath: properties.foregroundStyle] as? F {
+                lineMark(for: point)
+                    .foregroundStyle(by: .value(properties.foregroundStyleLabelKey, f))
+                    .interpolationMethod(.monotone)
+                
             }
         }
+    }
+    
+    @ChartContentBuilder private func lineMark(for point: Feature) -> some ChartContent {
+        if let x = point.properties[keyPath: properties.x] as? X {
+            if let y = point.properties[keyPath: properties.y] as? Double {
+                LineMark(
+                    x: .value(properties.xLabelKey, x),
+                    y: yPlotValue(properties.yLabelKey, y)
+                )
+            } else if let y = point.properties[keyPath: properties.y] as? Int {
+                LineMark(
+                    x: .value(properties.xLabelKey, x),
+                    y: yPlotValue(properties.yLabelKey, y)
+                )
+            } else if let y = point.properties[keyPath: properties.y] as? Float {
+                LineMark(
+                    x: .value(properties.xLabelKey, x),
+                    y: yPlotValue(properties.yLabelKey, y)
+                )
+            }
+        }
+    }
+    
+    private func yPlotValue(
+        _ labelKey: String,
+        _ value: Double
+    ) -> PlottableValue<Double> {
+        .value(labelKey, value)
+    }
+    
+    private func yPlotValue(
+        _ labelKey: String,
+        _ value: Int
+    ) -> PlottableValue<Int> {
+        .value(labelKey, value)
+    }
+    
+    private func yPlotValue(
+        _ labelKey: String,
+        _ value: Float
+    ) -> PlottableValue<Float> {
+        .value(labelKey, value)
     }
 }
