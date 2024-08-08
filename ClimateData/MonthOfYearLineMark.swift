@@ -1,5 +1,5 @@
 //
-//  MonthOfYearLineChart.swift
+//  MonthOfYearLineMark.swift
 //  ClimateData
 //
 //  Created by Bosco Ho on 2024-08-05.
@@ -13,7 +13,7 @@ struct AnyPlottable<V: Plottable> {
     let value: V.Type
 }
 
-struct MonthOfYearLineChart<
+struct MonthOfYearLineMark<
     X: Plottable,
     Y: Plottable,
     F: Plottable

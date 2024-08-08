@@ -19,7 +19,7 @@ struct ChartView: View {
     var body: some View {
         GroupBox {
             Chart(features, id: \.first?.id) { feature in
-                MonthOfYearLineChart(
+                MonthOfYearLineMark(
                     dataPoints: feature,
                     properties: .init(
                         x: (\.localDay, "Day"),
