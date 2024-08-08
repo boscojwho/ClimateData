@@ -13,5 +13,6 @@ struct ClimateDataApp: App {
         WindowGroup {
             ContentView()
         }
+        .windowResizability(.contentMinSize)
     }
 }

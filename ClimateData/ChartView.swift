@@ -13,7 +13,25 @@ struct ChartView: View {
     let yProperty: PartialKeyPath<Properties>
     let yCodingKey: Properties.CodingKeys
     let yDomain: [Double]
+    let highlightForegroundValue: Double?
+    init(
+        features: [[Feature]],
+        yProperty: PartialKeyPath<Properties>,
+        yCodingKey: Properties.CodingKeys,
+        yDomain: [Double],
+        highlightForegroundValue: Double?
+    ) {
+        self.features = features
+        self.yProperty = yProperty
+        self.yCodingKey = yCodingKey
+        self.yDomain = yDomain
+        self.highlightForegroundValue = highlightForegroundValue
+        self.foregroundPlotValues = features
+            .compactMap { $0.first?.properties.localYear }
+            .sorted()
+    }
     
+    private let foregroundPlotValues: [Int]
     @State private var selectedIndex: Int?
 
     var body: some View {
@@ -91,18 +109,25 @@ struct ChartView: View {
                         .fontWeight(.medium)
                 }
             }
-            .chartForegroundStyleScale(range: features.enumerated().map {
-                offset, element in
-//                if offset == 0 {
-//                    return Color.red
-//                } else {
-                    let opacity = Double(offset)/Double(features.count)
-                    return Color.blue.opacity(opacity)
-//                }
-            })
+            .chartForegroundStyleScale(domain: yDomain) { (foregroundPlotValue: Double) in
+                if let highlightForegroundValue, foregroundPlotValue == highlightForegroundValue {
+                    return Color.red
+                } else {
+                    if let index = foregroundPlotValueIndex(Int(foregroundPlotValue)) {
+                        let opacity = Double(index + 1)/Double(foregroundPlotValues.count + 1)
+                        return Color.blue.opacity(opacity)
+                    } else {
+                        return Color.blue.opacity(1)
+                    }
+                }
+            }
         } label: {
             Text("\(yCodingKey.stringValue) in Selected Month (by Year)")
                 .font(.largeTitle)
         }
+    }
+    
+    private func foregroundPlotValueIndex(_ value: Int) -> Int? {
+        foregroundPlotValues.firstIndex(of: value)
     }
 }

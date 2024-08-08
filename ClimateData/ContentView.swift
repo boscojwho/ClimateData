@@ -15,80 +15,80 @@ struct ContentView: View {
     @State private var domain: [Double] = [0, 0]
 
     var body: some View {
-        HStack {
-            if let climateData, let byYearMonth, let byYear {
-                VStack {
-                    GroupBox {
-                        Text("Loaded ^[\(climateData.numberReturned) day](inflect: true) of data.")
-                    }
-                    ChartView(
-                        features: features,
-                        yProperty: selectedProperty.keyPath,
-                        yCodingKey: selectedProperty,
-                        yDomain: domain
-                    )
-                    .onChange(of: selectedProperty, initial: true) { _, newValue in
-                        let features = features(
-                            Int(selectedMinYear)...Int(selectedMaxYear),
-                            month: Int(selectedMonth)
-                        )
-                        let domain = findDomain(in: byYear.values.compactMap { $0 })
-                        self.features = features
-                        self.domain = domain
-                    }
-                    .onChange(of: selectedMonth) {
-                        self.features = features(
-                            Int(selectedMinYear)...Int(selectedMaxYear),
-                            month: Int(selectedMonth)
-                        )
-                    }
-                    .onChange(of: selectedMinYear) {
-                        self.features = features(
-                            Int(selectedMinYear)...Int(selectedMaxYear),
-                            month: Int(selectedMonth)
-                        )
-                    }
-                    .onChange(of: selectedMaxYear) {
-                        self.features = features(
-                            Int(selectedMinYear)...Int(selectedMaxYear),
-                            month: Int(selectedMonth)
-                        )
-                    }
-                }
-            } else {
-                ProgressView()
-            }
-        }
-        .padding()
-        .task {
-            let decoder = JSONDecoder()
-            let url = Bundle.main.url(
-                forResource: "vancouver_harbour_daily_1924_2024",
-                withExtension: "json"
-            )
-            let data = try! Data(contentsOf: url!)
-            do {
-                let featureCollection = try decoder.decode(FeatureCollection.self, from: data)
-                let byYear = Dictionary(grouping: featureCollection.features) {
-                    $0.properties.localYear
-                }
-                let byMonth = byYear.mapValues { value in
-                    Dictionary(grouping: value) {
-                        $0.properties.localMonth
-                    }
-                }
-                print("byMonth -> \(byMonth.count)")
-                climateData = featureCollection
-                self.byYear = byYear
-                self.byYearMonth = byMonth
-            } catch {
-                print("Error decoding GeoJSON data:", error)
-            }
-        }
-        .inspectorColumnWidth(480)
-        .inspector(isPresented: .constant(true)) {
+        NavigationSplitView {
             filters()
                 .padding()
+                .navigationSplitViewColumnWidth(min: 280, ideal: 280)
+        } detail: {
+            HStack {
+                if let climateData, let byYearMonth, let byYear {
+                    VStack {
+                        ChartView(
+                            features: features,
+                            yProperty: selectedProperty.keyPath,
+                            yCodingKey: selectedProperty,
+                            yDomain: domain,
+                            highlightForegroundValue: setHighlightsYear ? highlightYear : nil
+                        )
+                        .onChange(of: selectedProperty, initial: true) { _, newValue in
+                            let features = features(
+                                Int(selectedMinYear)...Int(selectedMaxYear),
+                                month: Int(selectedMonth)
+                            )
+                            let domain = findDomain(in: byYear.values.compactMap { $0 })
+                            self.features = features
+                            self.domain = domain
+                        }
+                        .onChange(of: selectedMonth) {
+                            self.features = features(
+                                Int(selectedMinYear)...Int(selectedMaxYear),
+                                month: Int(selectedMonth)
+                            )
+                        }
+                        .onChange(of: selectedMinYear) {
+                            self.features = features(
+                                Int(selectedMinYear)...Int(selectedMaxYear),
+                                month: Int(selectedMonth)
+                            )
+                        }
+                        .onChange(of: selectedMaxYear) {
+                            self.features = features(
+                                Int(selectedMinYear)...Int(selectedMaxYear),
+                                month: Int(selectedMonth)
+                            )
+                        }
+                    }
+                } else {
+                    ProgressView()
+                }
+            }
+            .frame(minWidth: 720)
+            .padding()
+            .task {
+                let decoder = JSONDecoder()
+                let url = Bundle.main.url(
+                    forResource: "vancouver_harbour_daily_1924_2024",
+                    withExtension: "json"
+                )
+                let data = try! Data(contentsOf: url!)
+                do {
+                    let featureCollection = try decoder.decode(FeatureCollection.self, from: data)
+                    let byYear = Dictionary(grouping: featureCollection.features) {
+                        $0.properties.localYear
+                    }
+                    let byMonth = byYear.mapValues { value in
+                        Dictionary(grouping: value) {
+                            $0.properties.localMonth
+                        }
+                    }
+                    print("byMonth -> \(byMonth.count)")
+                    climateData = featureCollection
+                    self.byYear = byYear
+                    self.byYearMonth = byMonth
+                } catch {
+                    print("Error decoding GeoJSON data:", error)
+                }
+            }
         }
     }
     
@@ -104,6 +104,10 @@ struct ContentView: View {
             #endif
             return monthlyData
         }
+        .sorted { lhs, rhs in
+            guard let l = lhs.first, let r = rhs.first else { return false }
+            return l.properties.localYear < r.properties.localYear
+        }
     }
     
     @State private var selectedProperty: Properties.CodingKeys = .maxTemperature
@@ -111,10 +115,17 @@ struct ContentView: View {
     @State private var selectedMaxYear: Double = 2024
     @State private var selectedMonth: Double = 1
     
+    @State private var setHighlightsYear = true
+    @State private var highlightYear: Double = 2024
+    
     @ViewBuilder
     private func filters() -> some View {
         if let climateData {
+            let years: [Int] = Array(byYear!.keys.sorted { $0 < $1 })
             VStack {
+                GroupBox {
+                    Text("Loaded ^[\(climateData.numberReturned) day](inflect: true) of data.")
+                }
                 GroupBox {
                     Picker(selection: $selectedProperty) {
                         ForEach(Properties.CodingKeys.allCases, id: \.self) { p in
@@ -127,7 +138,7 @@ struct ContentView: View {
                 }
                 GroupBox {
                     VStack(spacing: 12) {
-                        VStack {
+                        VStack(alignment: .leading) {
                             Text(String(selectedMonth))
                             Slider(value: $selectedMonth, in: 1...12, step: 1) {
                                 EmptyView()
@@ -139,11 +150,8 @@ struct ContentView: View {
                                 /// no-op
                             }
                         }
-                        
-                        let years: [Int] = Array(byYear!.keys.sorted { $0 < $1 })
-                        
-                        VStack {
-                            Text("Start Year: \(selectedMinYear)")
+                        VStack(alignment: .leading) {
+                            Text(verbatim: "Start Year: \(Int(selectedMinYear))")
                             Slider(value: .init(get: {
                                 selectedMinYear
                             }, set: { newValue in
@@ -166,9 +174,8 @@ struct ContentView: View {
                                 /// no-op
                             }
                         }
-                        
-                        VStack {
-                            Text("End Year: \(selectedMaxYear)")
+                        VStack(alignment: .leading) {
+                            Text(verbatim: "End Year: \(Int(selectedMaxYear))")
                             Slider(value: .init(get: {
                                 selectedMaxYear
                             }, set: { newValue in
@@ -191,6 +198,26 @@ struct ContentView: View {
                                 /// no-op
                             }
                         }
+                    }
+                }
+                GroupBox {
+                    VStack(alignment: .leading) {
+                        Text(verbatim: "Highlight Year: \(Int(highlightYear))")
+                        Slider(
+                            value: $highlightYear,
+                            in: Double(years.first!)...Double(years.last!),
+                            step: 1
+                        ) {
+                            EmptyView()
+                        } minimumValueLabel: {
+                            EmptyView()
+                        } maximumValueLabel: {
+                            EmptyView()
+                        } onEditingChanged: { _ in
+                            /// no-op
+                        }
+                        .disabled(setHighlightsYear == false)
+                        Toggle("Show Highlight", isOn: $setHighlightsYear)
                     }
                 }
             }
@@ -219,7 +246,7 @@ struct ContentView: View {
                     max = val
                 }
             }
-            print(min, max)
+//            print(min, max)
             if min < minDomain {
                 minDomain = min
             }
@@ -229,7 +256,7 @@ struct ContentView: View {
                 
         }
         
-        print(minDomain, maxDomain)
+//        print(minDomain, maxDomain)
         return [minDomain, maxDomain]
     }
 }
