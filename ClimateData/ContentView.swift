@@ -10,6 +10,7 @@ import MapKit
 
 struct ContentView: View {
     @State private var climateData: FeatureCollection?
+    @State private var years: [Int]?
     @State private var byYear: [Int : [Feature]]?
     @State private var byYearMonth: [Int : [Int : [Feature]]]?
     @State private var features: [[Feature]] = []
@@ -108,8 +109,14 @@ struct ContentView: View {
             }
             print("byMonth -> \(byMonth.count)")
             climateData = featureCollection
+            self.years = Array(byYear.keys.sorted { $0 < $1 })
             self.byYear = byYear
             self.byYearMonth = byMonth
+            if let min = years?.first, let max = years?.last {
+                self.selectedMinYear = Double(min)
+                self.selectedMaxYear = Double(max)
+                self.highlightYear = Double(max)
+            }
         } catch {
             print("Error decoding GeoJSON data:", error)
         }
@@ -172,8 +179,7 @@ struct ContentView: View {
     
     @ViewBuilder
     private func filters() -> some View {
-        if let climateData {
-            let years: [Int] = Array(byYear!.keys.sorted { $0 < $1 })
+        if let climateData, let years {
             VStack {
                 stationData()
                 GroupBox {
