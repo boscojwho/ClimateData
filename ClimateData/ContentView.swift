@@ -14,12 +14,19 @@ struct ContentView: View {
     @State private var byYearMonth: [Int : [Int : [Feature]]]?
     @State private var features: [[Feature]] = []
     @State private var domain: [Double] = [0, 0]
+    @State private var stationDataFileUrl: URL? = Bundle.main.url(
+        forResource: "vancouver_harbour_daily_1924_2024",
+        withExtension: "json"
+    )
 
     var body: some View {
         NavigationSplitView {
-            filters()
-                .padding()
-                .navigationSplitViewColumnWidth(min: 280, ideal: 280)
+            ScrollView {
+                filters()
+                    .padding()
+                    .id(stationDataFileUrl)
+            }
+            .navigationSplitViewColumnWidth(min: 280, ideal: 280)
         } detail: {
             HStack {
                 if let climateData, let byYearMonth, let byYear {
@@ -31,6 +38,15 @@ struct ContentView: View {
                             yDomain: domain,
                             highlightForegroundValue: setHighlightsYear ? highlightYear : nil
                         )
+                        .onChange(of: stationDataFileUrl) {
+                            let features = features(
+                                Int(selectedMinYear)...Int(selectedMaxYear),
+                                month: Int(selectedMonth)
+                            )
+                            let domain = findDomain(in: byYear.values.compactMap { $0 })
+                            self.features = features
+                            self.domain = domain
+                        }
                         .onChange(of: selectedProperty, initial: true) { _, newValue in
                             let features = features(
                                 Int(selectedMinYear)...Int(selectedMaxYear),
@@ -65,31 +81,37 @@ struct ContentView: View {
             }
             .frame(minWidth: 720)
             .padding()
-            .task {
-                let decoder = JSONDecoder()
-                let url = Bundle.main.url(
-                    forResource: "vancouver_harbour_daily_1924_2024",
-                    withExtension: "json"
-                )
-                let data = try! Data(contentsOf: url!)
-                do {
-                    let featureCollection = try decoder.decode(FeatureCollection.self, from: data)
-                    let byYear = Dictionary(grouping: featureCollection.features) {
-                        $0.properties.localYear
+            .task(id: stationDataFileUrl) {
+                if let stationDataFileUrl {
+                    do {
+                        try loadStationData(url: stationDataFileUrl)
+                    } catch {
+                        print(error)
                     }
-                    let byMonth = byYear.mapValues { value in
-                        Dictionary(grouping: value) {
-                            $0.properties.localMonth
-                        }
-                    }
-                    print("byMonth -> \(byMonth.count)")
-                    climateData = featureCollection
-                    self.byYear = byYear
-                    self.byYearMonth = byMonth
-                } catch {
-                    print("Error decoding GeoJSON data:", error)
                 }
             }
+        }
+    }
+    
+    private func loadStationData(url: URL) throws {
+        let decoder = JSONDecoder()
+        let data = try Data(contentsOf: url)
+        do {
+            let featureCollection = try decoder.decode(FeatureCollection.self, from: data)
+            let byYear = Dictionary(grouping: featureCollection.features) {
+                $0.properties.localYear
+            }
+            let byMonth = byYear.mapValues { value in
+                Dictionary(grouping: value) {
+                    $0.properties.localMonth
+                }
+            }
+            print("byMonth -> \(byMonth.count)")
+            climateData = featureCollection
+            self.byYear = byYear
+            self.byYearMonth = byMonth
+        } catch {
+            print("Error decoding GeoJSON data:", error)
         }
     }
     
@@ -145,6 +167,9 @@ struct ContentView: View {
     @State private var setHighlightsYear = true
     @State private var highlightYear: Double = 2024
     
+    @State private var isHoveringOverDropZone = false
+    @State private var isDroppingClimateDataFile = false
+    
     @ViewBuilder
     private func filters() -> some View {
         if let climateData {
@@ -152,7 +177,34 @@ struct ContentView: View {
             VStack {
                 stationData()
                 GroupBox {
-                    Text("Loaded ^[\(climateData.numberReturned) day](inflect: true) of data.")
+                    VStack(alignment: .leading) {
+                        Text("Loaded ^[\(climateData.numberReturned) day](inflect: true) of data.")
+                        Text("Data Source: https://climatedata.ca/download/#station-download")
+                    }
+                    GroupBox {
+                        ContentUnavailableView {
+                            Image(systemName: "arrow.down")
+                                .symbolRenderingMode(.monochrome)
+                                .symbolVariant(.circle)
+                                .bold()
+                                .symbolEffect(.scale.up, options: .repeating, isActive: isDroppingClimateDataFile)
+                        } description: {
+                            Text("Drag and drop ClimateData station data in GeoJSON format here")
+                                .font(.body)
+                        }
+                    }
+                    .onHover(perform: { hovering in
+                        if isDroppingClimateDataFile == false {
+                            isHoveringOverDropZone = hovering
+                        }
+                    })
+                    .climateDataFileDrop(
+                        fileUrl: $stationDataFileUrl,
+                        isTargeted: $isDroppingClimateDataFile
+                    )
+                    .foregroundStyle(isDroppingClimateDataFile ? .blue : Color.secondary)
+                    .symbolEffect(.pulse, options: .repeating, isActive: isDroppingClimateDataFile)
+                    .symbolEffect(.bounce.byLayer, value: isHoveringOverDropZone)
                 }
                 GroupBox {
                     Picker(selection: $selectedProperty) {
